@@ -58,11 +58,24 @@ class LandmarkProcessor:
 
         return normalized
 
-    def process_mediapipe_landmarks(self, hand_landmarks) -> np.ndarray | None:
-        """Processes MediaPipe landmarks.
+    def process_landmarks(self, landmarks: list[LandmarkPoint]) -> np.ndarray | None:
+        """Processes a list of LandmarkPoint objects.
 
         Args:
-            hand_landmarks: Result from MediaPipe Hands.
+            landmarks: List of LandmarkPoint from LandmarkDetector.
+
+        Returns:
+            Normalized array [63,] or None if invalid.
+        """
+        if landmarks is None or len(landmarks) != self.NUM_LANDMARKS:
+            return None
+        return self.normalize_landmarks(landmarks)
+
+    def process_mediapipe_landmarks(self, hand_landmarks) -> np.ndarray | None:
+        """Processes MediaPipe landmarks (legacy support).
+
+        Args:
+            hand_landmarks: Result from MediaPipe Hands (deprecated API).
 
         Returns:
             Normalized array [63,] or None if no landmarks are present.
@@ -79,3 +92,8 @@ class LandmarkProcessor:
             return None
 
         return self.normalize_landmarks(landmarks)
+
+
+from src.inference.landmark_detector import LandmarkDetector
+
+__all__ = ["LandmarkPoint", "LandmarkProcessor", "LandmarkDetector"]

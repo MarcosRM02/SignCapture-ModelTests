@@ -53,6 +53,24 @@ class TrainingConfig:
 
 
 @dataclass
+class MediaPipeConfig:
+    """Configuration for MediaPipe hand landmark detection."""
+
+    max_num_hands: int = 1
+    min_detection_confidence: float = 0.3
+    model_path: str = "../models/hand_landmarker.task"
+
+    def __init__(self) -> None:
+        config_path = Path(__file__).resolve().parents[1] / "config" / "settings.yaml"
+        if config_path.exists():
+            settings = load_yaml(config_path)
+            mp_config = settings.get("mediapipe", {})
+            self.max_num_hands = mp_config.get("max_num_hands", 1)
+            self.min_detection_confidence = mp_config.get("min_detection_confidence", 0.3)
+            self.model_path = mp_config.get("model_path", "../models/hand_landmarker.task")
+
+
+@dataclass
 class RandomForestConfig:
     """Configuration for the Random Forest model."""
 
@@ -82,11 +100,13 @@ class Config:
 
     paths: PathsConfig
     training: TrainingConfig
+    mediapipe: MediaPipeConfig
     random_forest: RandomForestConfig
 
     def __init__(self) -> None:
         self.paths = PathsConfig()
         self.training = TrainingConfig()
+        self.mediapipe = MediaPipeConfig()
         self.random_forest = RandomForestConfig()
 
 

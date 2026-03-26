@@ -2,6 +2,12 @@
 general:
   seed: 42
 
+# MediaPipe configuration
+mediapipe:
+  min_detection_confidence: 0.3
+  max_num_hands: 1
+  model_path: "../models/hand_landmarker.task"
+
 # Random Forest hyperparameters
 random_forest:
   n_estimators: 200

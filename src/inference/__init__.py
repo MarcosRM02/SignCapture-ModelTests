@@ -1,10 +1,11 @@
 """Landmark processor for inference.
 
-Replicates the normalization logic from SignCapture-ADA for consistency."""
+Replicates normalization and feature engineering logic from SignCapture-ADA."""
 
 from dataclasses import dataclass
 
 import numpy as np
+from src.preprocessing import build_feature_vector, normalize_landmarks_array
 
 
 @dataclass
@@ -17,9 +18,9 @@ class LandmarkPoint:
 
 
 class LandmarkProcessor:
-    """Landmark processor for normalization.
+    """Landmark processor for normalization and feature engineering.
 
-    Exactly replicates the logic from SignCapture-ADA/src/gold/normalizer.py
+    Exactly replicates the logic from SignCapture-ADA Gold pipeline.
     """
 
     NUM_LANDMARKS = 21
@@ -33,30 +34,14 @@ class LandmarkProcessor:
         Returns:
             Normalized array [63,].
         """
-        if isinstance(landmarks, np.ndarray):
-            if landmarks.shape == (21, 3):
-                x_coords = landmarks[:, 0]
-                y_coords = landmarks[:, 1]
-                z_coords = landmarks[:, 2]
-            else:
-                raise ValueError(f"Unsupported landmarks shape: {landmarks.shape}")
-        else:
-            x_coords = np.array([lm.x for lm in landmarks])
-            y_coords = np.array([lm.y for lm in landmarks])
-            z_coords = np.array([lm.z for lm in landmarks])
+        landmark_array = self._to_landmark_array(landmarks)
+        normalized_landmarks = normalize_landmarks_array(landmark_array)
+        return normalized_landmarks.reshape(-1)
 
-        min_x, max_x = x_coords.min(), x_coords.max()
-        min_y, max_y = y_coords.min(), y_coords.max()
-        min_z, max_z = z_coords.min(), z_coords.max()
-
-        normalized = np.zeros(63, dtype=np.float32)
-
-        for i in range(self.NUM_LANDMARKS):
-            normalized[i * 3] = (x_coords[i] - min_x) / (max_x - min_x) * 2 - 1 if max_x > min_x else 0
-            normalized[i * 3 + 1] = (y_coords[i] - min_y) / (max_y - min_y) * 2 - 1 if max_y > min_y else 0
-            normalized[i * 3 + 2] = (z_coords[i] - min_z) / (max_z - min_z) * 2 - 1 if max_z > min_z else 0
-
-        return normalized
+    def build_features(self, landmarks: list[LandmarkPoint] | np.ndarray) -> np.ndarray:
+        """Builds full feature vector [63 landmarks + 14 angles]."""
+        landmark_array = self._to_landmark_array(landmarks)
+        return build_feature_vector(landmark_array)
 
     def process_landmarks(self, landmarks: list[LandmarkPoint]) -> np.ndarray | None:
         """Processes a list of LandmarkPoint objects.
@@ -65,11 +50,11 @@ class LandmarkProcessor:
             landmarks: List of LandmarkPoint from LandmarkDetector.
 
         Returns:
-            Normalized array [63,] or None if invalid.
+            Feature vector [77,] or None if invalid.
         """
         if landmarks is None or len(landmarks) != self.NUM_LANDMARKS:
             return None
-        return self.normalize_landmarks(landmarks)
+        return self.build_features(landmarks)
 
     def process_mediapipe_landmarks(self, hand_landmarks) -> np.ndarray | None:
         """Processes MediaPipe landmarks (legacy support).
@@ -78,7 +63,7 @@ class LandmarkProcessor:
             hand_landmarks: Result from MediaPipe Hands (deprecated API).
 
         Returns:
-            Normalized array [63,] or None if no landmarks are present.
+            Feature vector [77,] or None if no landmarks are present.
         """
         if hand_landmarks is None:
             return None
@@ -91,7 +76,16 @@ class LandmarkProcessor:
         if len(landmarks) != self.NUM_LANDMARKS:
             return None
 
-        return self.normalize_landmarks(landmarks)
+        return self.build_features(landmarks)
+
+    def _to_landmark_array(self, landmarks: list[LandmarkPoint] | np.ndarray) -> np.ndarray:
+        """Convert input landmarks to a [21, 3] NumPy array."""
+        if isinstance(landmarks, np.ndarray):
+            if landmarks.shape != (self.NUM_LANDMARKS, 3):
+                raise ValueError(f"Unsupported landmarks shape: {landmarks.shape}")
+            return landmarks.astype(np.float64, copy=False)
+
+        return np.array([[lm.x, lm.y, lm.z] for lm in landmarks], dtype=np.float64)
 
 
 from src.inference.landmark_detector import LandmarkDetector

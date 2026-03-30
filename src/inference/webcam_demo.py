@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 from pathlib import Path
 
-from src.models.random_forest import RandomForestClassifier
+from src.models import load_model
 from src.inference import LandmarkProcessor, LandmarkDetector
 from src.data import DataLoader
 
@@ -19,7 +19,7 @@ class WebcamDemo:
             model_path: Path to the .pkl model.
             min_confidence: Minimum confidence to display prediction.
         """
-        self.model = RandomForestClassifier.load(model_path)
+        self.model = load_model(model_path)
         self.processor = LandmarkProcessor()
         self.min_confidence = min_confidence
 

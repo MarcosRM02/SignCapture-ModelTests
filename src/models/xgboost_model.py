@@ -81,7 +81,7 @@ class XGBoostClassifier(BaseModel):
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
         with open(path, "wb") as f:
-            pickle.dump({"model": self.model, "config": self.config}, f)
+            pickle.dump({"model": self.model, "config": self.config, "model_name": self.name}, f)
 
     @classmethod
     def load(cls, path: Path) -> "XGBoostClassifier":

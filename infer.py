@@ -4,6 +4,7 @@ Usage:
     python infer.py
     python infer.py --camera 1
     python infer.py --confidence 0.7
+    python infer.py --model ../models/xgboost_asl.pkl
 """
 
 import argparse
@@ -23,7 +24,8 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    model_path = Path(args.model) if args.model else config.paths.models_dir / "random_forest_asl.pkl"
+    default_model_path = config.paths.models_dir / f"{config.training.model}_asl.pkl"
+    model_path = Path(args.model) if args.model else default_model_path
 
     if not model_path.exists():
         print(f" Model not found: {model_path}")

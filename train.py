@@ -2,24 +2,37 @@
 
 Usage:
     python train.py
+    python train.py --model random_forest
+    python train.py --model xgboost
 """
 
-from pathlib import Path
+import argparse
 
 from sklearn.metrics import classification_report, accuracy_score
 
 from src.config import config
 from src.data import DataLoader
-from src.models import RandomForestClassifier
+from src.models import available_models, create_model
 from src.utils import set_seed
 
 
 def main() -> None:
-    """Trains the Random Forest model and saves the result."""
+    """Trains a configured model and saves the result."""
+    parser = argparse.ArgumentParser(description="Train ASL classifier")
+    parser.add_argument(
+        "--model",
+        type=str,
+        default="random_forest",
+        choices=available_models(),
+        help="Model name to train",
+    )
+    args = parser.parse_args()
+
+    model_name = args.model
     set_seed(config.training.seed)
 
     print("=" * 60)
-    print("Training Random Forest for ASL classification")
+    print(f"Training {model_name} for ASL classification")
     print("=" * 60)
 
     # Load data
@@ -34,7 +47,7 @@ def main() -> None:
 
     # Train model
     print("\n Training model...")
-    model = RandomForestClassifier()
+    model = create_model(model_name)
     metrics = model.train(X_train, y_train, X_val, y_val)
 
     print(f"   Train accuracy: {metrics['train_accuracy']:.4f}")
@@ -51,7 +64,7 @@ def main() -> None:
     ))
 
     # Save model
-    model_path = config.paths.models_dir / "random_forest_asl.pkl"
+    model_path = config.paths.models_dir / f"{model.name}_asl.pkl"
     model.save(model_path)
     print(f"\n Model saved to: {model_path}")
 

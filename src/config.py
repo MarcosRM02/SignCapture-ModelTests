@@ -44,12 +44,14 @@ class TrainingConfig:
     """Training configuration."""
 
     seed: int = 42
+    model: str = "random_forest"
 
     def __init__(self) -> None:
         config_path = Path(__file__).resolve().parents[1] / "config" / "settings.yaml"
         if config_path.exists():
             settings = load_yaml(config_path)
             self.seed = settings.get("general", {}).get("seed", 42)
+            self.model = settings.get("training", {}).get("model", "random_forest")
 
 
 @dataclass
@@ -95,6 +97,34 @@ class RandomForestConfig:
 
 
 @dataclass
+class XGBoostConfig:
+    """Configuration for the XGBoost model."""
+
+    n_estimators: int = 300
+    max_depth: int = 8
+    learning_rate: float = 0.05
+    min_child_weight: int = 1
+    subsample: float = 0.9
+    colsample_bytree: float = 0.9
+    objective: str = "multi:softprob"
+    tree_method: str = "hist"
+
+    def __init__(self) -> None:
+        config_path = Path(__file__).resolve().parents[1] / "config" / "settings.yaml"
+        if config_path.exists():
+            settings = load_yaml(config_path)
+            xgb = settings.get("xgboost", {})
+            self.n_estimators = xgb.get("n_estimators", 300)
+            self.max_depth = xgb.get("max_depth", 8)
+            self.learning_rate = xgb.get("learning_rate", 0.05)
+            self.min_child_weight = xgb.get("min_child_weight", 1)
+            self.subsample = xgb.get("subsample", 0.9)
+            self.colsample_bytree = xgb.get("colsample_bytree", 0.9)
+            self.objective = xgb.get("objective", "multi:softprob")
+            self.tree_method = xgb.get("tree_method", "hist")
+
+
+@dataclass
 class Config:
     """Main configuration."""
 
@@ -102,12 +132,14 @@ class Config:
     training: TrainingConfig
     mediapipe: MediaPipeConfig
     random_forest: RandomForestConfig
+    xgboost: XGBoostConfig
 
     def __init__(self) -> None:
         self.paths = PathsConfig()
         self.training = TrainingConfig()
         self.mediapipe = MediaPipeConfig()
         self.random_forest = RandomForestConfig()
+        self.xgboost = XGBoostConfig()
 
 
 config = Config()

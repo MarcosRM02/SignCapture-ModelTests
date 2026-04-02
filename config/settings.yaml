@@ -1,0 +1,29 @@
+# General settings
+general:
+  seed: 42
+
+# MediaPipe configuration
+mediapipe:
+  min_detection_confidence: 0.3
+  max_num_hands: 1
+  model_path: "../models/hand_landmarker.task"
+
+# Random Forest hyperparameters
+random_forest:
+  n_estimators: 200
+  max_depth: 20
+  min_samples_split: 5
+  min_samples_leaf: 2
+  max_features: "sqrt"
+  class_weight: "balanced"
+
+# XGBoost hyperparameters
+xgboost:
+  n_estimators: 300
+  max_depth: 8
+  learning_rate: 0.05
+  min_child_weight: 1
+  subsample: 0.9
+  colsample_bytree: 0.9
+  objective: "multi:softprob"
+  tree_method: "hist"

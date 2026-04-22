@@ -26,4 +26,3 @@ xgboost:
   subsample: 0.7
   colsample_bytree: 0.9
   objective: "multi:softprob" # Para clasificación multiclase
-  tree_method: "hist"         

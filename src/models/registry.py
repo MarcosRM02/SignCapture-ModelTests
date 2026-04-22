@@ -6,7 +6,7 @@ from typing import Any
 
 from src.models.base import BaseModel
 from src.models.random_forest import RandomForestClassifier
-from src.models.xgboost_model import XGBoostClassifier
+from src.models.xgboost import XGBoostClassifier
 
 MODEL_REGISTRY = {
     "random_forest": RandomForestClassifier,

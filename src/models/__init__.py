@@ -3,7 +3,7 @@
 from src.models.base import BaseModel
 from src.models.registry import available_models, create_model, load_model
 from src.models.random_forest import RandomForestClassifier
-from src.models.xgboost_model import XGBoostClassifier
+from src.models.xgboost import XGBoostClassifier
 
 __all__ = [
     "BaseModel",

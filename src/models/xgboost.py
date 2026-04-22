@@ -30,7 +30,6 @@ class XGBoostClassifier(BaseModel):
             "subsample": xgb_config.subsample,
             "colsample_bytree": xgb_config.colsample_bytree,
             "objective": xgb_config.objective,
-            "tree_method": xgb_config.tree_method,
             "n_jobs": -1,
             "random_state": config.training.seed,
         }

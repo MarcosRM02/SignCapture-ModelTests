@@ -107,7 +107,6 @@ class XGBoostConfig:
     subsample: float = 0.9
     colsample_bytree: float = 0.9
     objective: str = "multi:softprob"
-    tree_method: str = "hist"
 
     def __init__(self) -> None:
         config_path = Path(__file__).resolve().parents[1] / "config" / "settings.yaml"
@@ -121,7 +120,6 @@ class XGBoostConfig:
             self.subsample = xgb.get("subsample", 0.9)
             self.colsample_bytree = xgb.get("colsample_bytree", 0.9)
             self.objective = xgb.get("objective", "multi:softprob")
-            self.tree_method = xgb.get("tree_method", "hist")
 
 
 @dataclass
@@ -131,7 +129,7 @@ class NeuralNetworkConfig:
     hidden_dim_1: int = 256
     hidden_dim_2: int = 128
     epochs: int = 500
-    batch_size: int = 64
+    batch_size: int = 256
     learning_rate: float = 0.001
 
     def __init__(self) -> None:

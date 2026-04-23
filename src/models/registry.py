@@ -5,10 +5,12 @@ from pathlib import Path
 from typing import Any
 
 from src.models.base import BaseModel
+from src.models.neural_network import NeuralNetworkClassifier
 from src.models.random_forest import RandomForestClassifier
 from src.models.xgboost import XGBoostClassifier
 
 MODEL_REGISTRY = {
+    "neural_network": NeuralNetworkClassifier,
     "random_forest": RandomForestClassifier,
     "xgboost": XGBoostClassifier,
 }
@@ -47,6 +49,8 @@ def _infer_model_name(model_data: dict[str, Any], model_path: Path) -> str:
             return "xgboost"
         if "randomforest" in class_name and "sklearn" in module_name:
             return "random_forest"
+        if "neuralnetworkclassifier" in class_name:
+            return "neural_network"
 
     filename = model_path.stem.lower()
     for model_name in MODEL_REGISTRY:

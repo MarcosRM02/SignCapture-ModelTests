@@ -1,9 +1,10 @@
-"""Script for training the Random Forest model.
+"""Script for training ASL classification models.
 
 Usage:
     python train.py
     python train.py --model random_forest
     python train.py --model xgboost
+    python train.py --model neural_network
 """
 
 import argparse

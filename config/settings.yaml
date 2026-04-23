@@ -26,3 +26,11 @@ xgboost:
   subsample: 0.7
   colsample_bytree: 0.9
   objective: "multi:softprob" # Para clasificación multiclase
+
+# Neural Network hyperparameters
+neural_network:
+  hidden_dim_1: 256
+  hidden_dim_2: 128
+  epochs: 500
+  batch_size: 256
+  learning_rate: 0.001

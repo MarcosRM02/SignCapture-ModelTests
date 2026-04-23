@@ -5,6 +5,7 @@ Usage:
     python infer.py --camera 1
     python infer.py --confidence 0.7
     python infer.py --model ../models/xgboost_asl.pkl
+    python infer.py --model ../models/neural_network_asl.pkl
 """
 
 import argparse

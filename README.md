@@ -1,6 +1,6 @@
 # SignCapture ModelTests
 
-Módulo de entrenamiento, evaluación y comparación de modelos para la clasificación de lenguaje de signos americano (ASL). El sistema utiliza datos preprocesados de la capa Gold, entrena modelos de scikit-learn, los exporta en formato serializado (pickle) y proporciona herramientas de inferencia en tiempo real.
+Módulo de entrenamiento, evaluación y comparación de modelos para la clasificación de lenguaje de signos americano (ASL). El sistema utiliza datos preprocesados de la capa Gold, entrena modelos de scikit-learn y PyTorch, los exporta en formato serializado (pickle) y proporciona herramientas de inferencia en tiempo real.
 
 ## Objetivo
 
@@ -8,6 +8,7 @@ El proyecto proporciona un framework extensible para experimentar con modelos de
 
 - **Random Forest**: Clasificador basado en ensamble de árboles de decisión.
 - **XGBoost**: Algoritmo de gradient boosting optimizado para velocidad y rendimiento.
+- **Neural Network**: Clasificador MLP implementado en PyTorch.
 
 Documentación ampliada:
 
@@ -53,21 +54,27 @@ mediapipe:
 
 random_forest:
   n_estimators: 200
-  max_depth: 20
-  min_samples_split: 5
-  min_samples_leaf: 2
+  max_depth: None
+  min_samples_split: 10
+  min_samples_leaf: 1
   max_features: "sqrt"
   class_weight: "balanced"
 
 xgboost:
-  n_estimators: 300
+  n_estimators: 200
   max_depth: 8
   learning_rate: 0.05
-  min_child_weight: 1
-  subsample: 0.9
+  min_child_weight: 3
+  subsample: 0.7
   colsample_bytree: 0.9
   objective: "multi:softprob"
-  tree_method: "hist"
+
+neural_network:
+  hidden_dim_1: 256
+  hidden_dim_2: 128
+  epochs: 500
+  batch_size: 256
+  learning_rate: 0.001
 ```
 
 ## Entrenamiento de modelos
@@ -82,6 +89,12 @@ python train.py
 
 ```bash
 python train.py --model xgboost
+```
+
+### Entrenar Neural Network (MLP)
+
+```bash
+python train.py --model neural_network
 ```
 
 Resultado:
@@ -104,6 +117,9 @@ python infer.py
 # Usar un modelo específico
 python infer.py --model ../models/xgboost_asl.pkl
 
+# Usar el modelo neuronal
+python infer.py --model ../models/neural_network_asl.pkl
+
 # Seleccionar otra cámara
 python infer.py --camera 1
 
@@ -123,7 +139,7 @@ Controles durante la ejecución:
 2. **Preprocesamiento**: Si faltan features angulares, se calculan automáticamente.
 3. **Entrenamiento**: El modelo seleccionado se entrena usando los hiperparámetros de configuración.
 4. **Evaluación**: Se evalúa el modelo en validación y test, reportando métricas completas.
-5. **Serialización**: El modelo entrenado se guarda en pickle con metadatos (nombre, clase, label_encoder).
+5. **Serialización**: El modelo entrenado se guarda en pickle con metadatos (nombre de modelo y configuración).
 6. **Inferencia**: El script `infer.py` carga el modelo y clasifica frames de video en tiempo real.
 
 ## Configuración
@@ -148,7 +164,8 @@ SignCapture/
 └── models/
     ├── hand_landmarker.task
     ├── random_forest_asl.pkl
-    └── xgboost_asl.pkl
+  ├── xgboost_asl.pkl
+  └── neural_network_asl.pkl
 ```
 
 Los parámetros de modelos se configuran en `config/settings.yaml`:
@@ -156,6 +173,7 @@ Los parámetros de modelos se configuran en `config/settings.yaml`:
 - `general.seed`: semilla para reproducibilidad
 - `random_forest.*`: hiperparámetros de Random Forest (n_estimators, max_depth, etc.)
 - `xgboost.*`: hiperparámetros de XGBoost (learning_rate, subsample, etc.)
+- `neural_network.*`: hiperparámetros de la red neuronal MLP (hidden_dim, epochs, batch_size, learning_rate)
 - `mediapipe.*`: configuración de detección de landmarks (solo para inferencia)
 
 ## Estructura de código
@@ -171,8 +189,9 @@ SignCapture-ModelTests/
 │   ├── models/
 │   │   ├── base.py                    # Clase abstracta BaseModel
 │   │   ├── registry.py                # Factory Pattern + MODEL_REGISTRY
+│   │   ├── neural_network.py          # Implementación de Neural Network (PyTorch)
 │   │   ├── random_forest.py           # Implementación de Random Forest
-│   │   └── xgboost_model.py           # Implementación de XGBoost
+│   │   └── xgboost.py                 # Implementación de XGBoost
 │   ├── preprocessing/
 │   │   └── landmark_features.py       # Normalización y features angulares
 │   ├── inference/
@@ -246,6 +265,7 @@ El sistema utiliza un `MODEL_REGISTRY` dict que mapea nombres de modelos a clase
 
 ```python
 MODEL_REGISTRY = {
+  "neural_network": NeuralNetworkClassifier,
     "random_forest": RandomForestClassifier,
     "xgboost": XGBoostClassifier,
 }
@@ -306,7 +326,7 @@ Métricas reportadas:
 ## Notas
 
 - El módulo es independiente de SignCapture-ADA pero requiere sus datos de salida.
-- Los modelos se entrenan con CPU por defecto (scikit-learn, xgboost optimizados para CPU).
+- Random Forest y XGBoost se entrenan en CPU; Neural Network usa GPU si está disponible y, en caso contrario, CPU.
 - La inferencia en webcam requiere cámara disponible y modelo entrenado.
 - Los landmarks se normalizan por imagen para invarianza a escala y posición.
 - El seed fijo (42) garantiza reproducibilidad en splits y entrenamiento.

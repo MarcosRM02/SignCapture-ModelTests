@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 import numpy as np
+from xgboost import XGBClassifier
 
 from src.config import config
 from src.models.base import BaseModel
@@ -29,22 +30,12 @@ class XGBoostClassifier(BaseModel):
             "subsample": xgb_config.subsample,
             "colsample_bytree": xgb_config.colsample_bytree,
             "objective": xgb_config.objective,
-            "tree_method": xgb_config.tree_method,
             "n_jobs": -1,
             "random_state": config.training.seed,
         }
         final_config = {**default_config, **(model_config or {})}
         super().__init__(name="xgboost", config=final_config)
-
-        try:
-            xgboost_module = importlib.import_module("xgboost")
-        except ModuleNotFoundError as exc:
-            raise ModuleNotFoundError(
-                "xgboost is required to train the xgboost model. "
-                "Install dependencies with: pip install -r requirements.txt"
-            ) from exc
-
-        self.model = xgboost_module.XGBClassifier(**final_config)
+        self.model = XGBClassifier(**final_config)
 
     def train(
         self,

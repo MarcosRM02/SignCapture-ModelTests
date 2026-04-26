@@ -1,12 +1,14 @@
 """Module for classification models."""
 
 from src.models.base import BaseModel
+from src.models.neural_network import NeuralNetworkClassifier
 from src.models.registry import available_models, create_model, load_model
 from src.models.random_forest import RandomForestClassifier
-from src.models.xgboost_model import XGBoostClassifier
+from src.models.xgboost import XGBoostClassifier
 
 __all__ = [
     "BaseModel",
+    "NeuralNetworkClassifier",
     "RandomForestClassifier",
     "XGBoostClassifier",
     "create_model",

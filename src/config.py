@@ -107,7 +107,6 @@ class XGBoostConfig:
     subsample: float = 0.9
     colsample_bytree: float = 0.9
     objective: str = "multi:softprob"
-    tree_method: str = "hist"
 
     def __init__(self) -> None:
         config_path = Path(__file__).resolve().parents[1] / "config" / "settings.yaml"
@@ -121,7 +120,28 @@ class XGBoostConfig:
             self.subsample = xgb.get("subsample", 0.9)
             self.colsample_bytree = xgb.get("colsample_bytree", 0.9)
             self.objective = xgb.get("objective", "multi:softprob")
-            self.tree_method = xgb.get("tree_method", "hist")
+
+
+@dataclass
+class NeuralNetworkConfig:
+    """Configuration for the Neural Network model."""
+
+    hidden_dim_1: int = 256
+    hidden_dim_2: int = 128
+    epochs: int = 500
+    batch_size: int = 256
+    learning_rate: float = 0.001
+
+    def __init__(self) -> None:
+        config_path = Path(__file__).resolve().parents[1] / "config" / "settings.yaml"
+        if config_path.exists():
+            settings = load_yaml(config_path)
+            nn_cfg = settings.get("neural_network", {})
+            self.hidden_dim_1 = nn_cfg.get("hidden_dim_1", 256)
+            self.hidden_dim_2 = nn_cfg.get("hidden_dim_2", 128)
+            self.epochs = nn_cfg.get("epochs", 500)
+            self.batch_size = nn_cfg.get("batch_size", 64)
+            self.learning_rate = nn_cfg.get("learning_rate", 0.001)
 
 
 @dataclass
@@ -133,6 +153,7 @@ class Config:
     mediapipe: MediaPipeConfig
     random_forest: RandomForestConfig
     xgboost: XGBoostConfig
+    neural_network: NeuralNetworkConfig
 
     def __init__(self) -> None:
         self.paths = PathsConfig()
@@ -140,6 +161,7 @@ class Config:
         self.mediapipe = MediaPipeConfig()
         self.random_forest = RandomForestConfig()
         self.xgboost = XGBoostConfig()
+        self.neural_network = NeuralNetworkConfig()
 
 
 config = Config()

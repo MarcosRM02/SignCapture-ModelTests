@@ -8,6 +8,7 @@ Usage:
 """
 
 import argparse
+import os
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -221,6 +222,11 @@ def main() -> None:
     
     # Save model
     model_path = config.paths.models_dir / f"{model.name}_asl.pkl"
+    env_model_path = os.environ.get('MODEL_OUTPUT_PATH')
+    if env_model_path:
+        model_path = Path(env_model_path)
+        model_path.parent.mkdir(parents=True, exist_ok=True)
+    
     model.save(model_path)
     print(f"\n Model saved to: {model_path}")
     

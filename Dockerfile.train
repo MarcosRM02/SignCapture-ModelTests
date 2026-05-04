@@ -1,0 +1,19 @@
+# Usa una imagen oficial ligera de Python
+FROM python:3.10-slim
+
+# Establece el directorio de trabajo en el contenedor
+WORKDIR /app
+
+# Instala dependencias del sistema requeridas (por ejemplo libgl1 para OpenCV)
+RUN apt-get update && apt-get install -y libgl1 libglib2.0-0 && rm -rf /var/lib/apt/lists/*
+
+# Copia los archivos de requerimientos e instala las dependencias
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copia el resto del código del modelo
+COPY . .
+
+# Ejecuta el script de entrenamiento por defecto
+# Se detendrá automáticamente una vez terminado.
+CMD ["python", "train.py"]

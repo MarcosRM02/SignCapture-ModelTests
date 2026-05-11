@@ -1,35 +1,45 @@
 """Model factory for ASL classifiers."""
 
+from __future__ import annotations
+
 import pickle
 from pathlib import Path
 from typing import Any
 
 from src.models.base import BaseModel
-from src.models.neural_network import NeuralNetworkClassifier
-from src.models.random_forest import RandomForestClassifier
-from src.models.xgboost import XGBoostClassifier
 
-MODEL_REGISTRY = {
-    "neural_network": NeuralNetworkClassifier,
-    "random_forest": RandomForestClassifier,
-    "xgboost": XGBoostClassifier,
-}
+MODEL_NAMES = ("neural_network", "random_forest", "xgboost")
+
+
+def _get_model_cls(model_name: str) -> type[BaseModel]:
+    """Resolve the concrete model class lazily to avoid importing unused stacks."""
+    normalized_name = model_name.strip().lower()
+    if normalized_name == "neural_network":
+        from src.models.neural_network import NeuralNetworkClassifier
+
+        return NeuralNetworkClassifier
+    if normalized_name == "random_forest":
+        from src.models.random_forest import RandomForestClassifier
+
+        return RandomForestClassifier
+    if normalized_name == "xgboost":
+        from src.models.xgboost import XGBoostClassifier
+
+        return XGBoostClassifier
+
+    available = ", ".join(sorted(MODEL_NAMES))
+    raise ValueError(f"Unsupported model '{model_name}'. Available models: {available}")
 
 
 def create_model(model_name: str, model_config: dict[str, Any] | None = None) -> BaseModel:
     """Create a model instance from its registered name."""
-    normalized_name = model_name.strip().lower()
-    model_cls = MODEL_REGISTRY.get(normalized_name)
-    if model_cls is None:
-        available = ", ".join(sorted(MODEL_REGISTRY))
-        raise ValueError(f"Unsupported model '{model_name}'. Available models: {available}")
-
+    model_cls = _get_model_cls(model_name)
     return model_cls(model_config=model_config)
 
 
 def available_models() -> list[str]:
     """Return the list of available model names."""
-    return sorted(MODEL_REGISTRY)
+    return sorted(MODEL_NAMES)
 
 
 def _infer_model_name(model_data: dict[str, Any], model_path: Path) -> str:
@@ -37,7 +47,7 @@ def _infer_model_name(model_data: dict[str, Any], model_path: Path) -> str:
     configured_name = model_data.get("model_name")
     if isinstance(configured_name, str):
         normalized_name = configured_name.strip().lower()
-        if normalized_name in MODEL_REGISTRY:
+        if normalized_name in MODEL_NAMES:
             return normalized_name
 
     model_object = model_data.get("model")
@@ -53,11 +63,11 @@ def _infer_model_name(model_data: dict[str, Any], model_path: Path) -> str:
             return "neural_network"
 
     filename = model_path.stem.lower()
-    for model_name in MODEL_REGISTRY:
+    for model_name in MODEL_NAMES:
         if model_name in filename:
             return model_name
 
-    available = ", ".join(sorted(MODEL_REGISTRY))
+    available = ", ".join(sorted(MODEL_NAMES))
     raise ValueError(
         f"Unable to infer model type for '{model_path}'. "
         f"Supported model types: {available}"
@@ -74,5 +84,5 @@ def load_model(model_path: Path | str) -> BaseModel:
         raise ValueError(f"Invalid model format in '{path}'. Expected a dictionary payload.")
 
     model_name = _infer_model_name(model_data, path)
-    model_cls = MODEL_REGISTRY[model_name]
+    model_cls = _get_model_cls(model_name)
     return model_cls.load(path)

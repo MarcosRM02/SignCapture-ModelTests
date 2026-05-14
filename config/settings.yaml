@@ -11,7 +11,7 @@ mediapipe:
 # Random Forest hyperparameters
 random_forest:
   n_estimators: 200
-  max_depth: None
+  max_depth: null
   min_samples_split: 10
   min_samples_leaf: 1
   max_features: "sqrt"
